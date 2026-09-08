@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LoaP</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='/css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <main class="search-page">
+
+        <h1>LoaP</h1>
+
+        <p class="subtitle">
+            캐릭터 이름을 입력해 스펙을 확인하세요.
+        </p>
+
+        <form
+            class="search-form"
+            onsubmit="searchCharacter(event)"
+        >
+
+            <input
+                id="character-name"
+                type="text"
+                placeholder="캐릭터 이름"
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">
+                검색
+            </button>
+
+        </form>
+
+        {% if error %}
+
+        <p class="error">
+            {{ error }}
+        </p>
+
+        {% endif %}
+
+    </main>
+
+
+    <script>
+
+        function searchCharacter(event) {
+
+            event.preventDefault();
+
+            const input =
+                document.getElementById(
+                    "character-name"
+                );
+
+            const characterName =
+                input.value.trim();
+
+            if (!characterName) {
+                return;
+            }
+
+            window.location.href =
+                "/character/"
+                + encodeURIComponent(
+                    characterName
+                );
+        }
+
+    </script>
+
+</body>
+
+</html>

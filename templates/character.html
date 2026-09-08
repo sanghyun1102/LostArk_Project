@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ character.profile.character_name }} - LoaP
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='/css/style.css') }}"
+    >
+</head>
+
+
+<body>
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header class="site-header">
+
+    <a href="/" class="site-logo">
+        LoaP
+    </a>
+
+
+    <form
+        class="header-search"
+        onsubmit="searchCharacter(event)"
+    >
+
+        <input
+            id="character-name"
+            type="text"
+            placeholder="캐릭터 이름 검색"
+            autocomplete="off"
+            required
+        >
+
+        <button type="submit">
+            검색
+        </button>
+
+    </form>
+
+</header>
+
+
+<main class="character-layout">
+
+
+    <!-- =========================
+         LEFT SIDEBAR
+    ========================= -->
+
+    <aside class="character-sidebar">
+
+
+        <!-- 프로필 -->
+
+        <section class="sidebar-card profile-panel">
+
+            <div class="character-image-box">
+
+                {% if character.profile.character_image %}
+
+                <img
+                    src="{{ character.profile.character_image }}"
+                    alt="{{ character.profile.character_name }}"
+                >
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="character-summary">
+
+                <h1>
+                    {{ character.profile.character_name }}
+                </h1>
+
+                <p>
+                    {{ character.profile.server_name }}
+                    ·
+                    {{ character.profile.class_name }}
+                </p>
+
+                <strong>
+                    Lv. {{ character.profile.item_level }}
+                </strong>
+
+
+                <div class="mini-stats">
+
+                    <span>
+                        공격력
+                        <b>{{ character.profile.attack_power }}</b>
+                    </span>
+
+                    <span>
+                        전투력
+                        <b>{{ character.profile.combat_power }}</b>
+                    </span>
+
+                    <span>
+                        치명
+                        <b>{{ character.profile.crit }}</b>
+                    </span>
+
+                    <span>
+                        특화
+                        <b>{{ character.profile.specialization }}</b>
+                    </span>
+
+                    <span>
+                        신속
+                        <b>{{ character.profile.swiftness }}</b>
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- 아크 패시브 -->
+
+        <section class="sidebar-card">
+
+            <div class="section-title">
+                아크 패시브
+            </div>
+
+            {% if character.ark_passive %}
+
+            <div class="ark-title">
+                {{ character.ark_passive.title }}
+            </div>
+
+            <div class="ark-points">
+
+                {% for name, point in character.ark_passive.points.items() %}
+
+                <div class="ark-point">
+
+                    <span>
+                        {{ name }}
+                    </span>
+
+                    <strong>
+                        {{ point.value }}
+                    </strong>
+
+                    <small>
+                        {{ point.rank }}랭크
+                        {{ point.level }}레벨
+                    </small>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+
+
+        <!-- 아크그리드 -->
+
+        <section class="sidebar-card">
+
+            <div class="section-title">
+                아크 그리드
+            </div>
+
+            <div class="arkgrid-list">
+
+                {% for core in character.ark_grid.cores %}
+
+                <div class="arkgrid-core">
+
+                    <div class="arkgrid-icon">
+
+                        {% if core.icon %}
+
+                        <img
+                            src="{{ core.icon }}"
+                            alt="{{ core.name }}"
+                        >
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            {{ core.name }}
+                        </strong>
+
+                        <span>
+                            {{ core.grade }}
+                            ·
+                            {{ core.point }} Point
+                        </span>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    </aside>
+
+
+
+    <!-- =========================
+         MAIN EQUIPMENT
+    ========================= -->
+
+    <section class="character-content">
+
+        <div class="equipment-columns">
+
+
+            <!-- LEFT EQUIPMENT -->
+
+            <div class="equipment-column">
+
+                {% set helmet = armor.get("투구") %}
+                {% set shoulder = armor.get("어깨") %}
+                {% set chest = armor.get("상의") %}
+                {% set pants = armor.get("하의") %}
+                {% set gloves = armor.get("장갑") %}
+
+
+                {% for label, item in [
+                    ("투구", helmet),
+                    ("어깨", shoulder),
+                    ("상의", chest),
+                    ("하의", pants),
+                    ("장갑", gloves),
+                    ("무기", character.weapon),
+                    ("완갑", character.wristguard)
+                ] %}
+
+                <article class="equipment-card">
+
+                    <div class="equipment-icon">
+
+                        {% if item and item.icon %}
+
+                        <img
+                            src="{{ item.icon }}"
+                            alt="{{ label }}"
+                        >
+
+                        {% else %}
+
+                        <span>
+                            {{ label }}
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            {{ label }}
+                        </span>
+
+                        {% if item %}
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+
+                            {% if item.get("grade") %}
+                            <span>
+                                {{ item.get("grade") }}
+                            </span>
+                            {% endif %}
+
+                            {% if item.get("item_level") %}
+                            <span>
+                                Lv. {{ item.get("item_level") }}
+                            </span>
+                            {% endif %}
+
+                            {% if item.get("quality") is not none %}
+                            <span>
+                                품질 {{ item.get("quality") }}
+                            </span>
+                            {% endif %}
+
+                        </div>
+
+                        {% else %}
+
+                        <strong>
+                            정보 없음
+                        </strong>
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+
+
+            <!-- RIGHT EQUIPMENT -->
+
+            <div class="equipment-column">
+
+
+                <!-- 목걸이 -->
+
+                <article class="equipment-card accessory-card">
+
+                    <div class="equipment-icon">
+
+                        {% if necklace and necklace.icon %}
+                        <img src="{{ necklace.icon }}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            목걸이
+                        </span>
+
+                        {% if necklace %}
+
+                        <strong>
+                            {{ necklace.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+                            <span>{{ necklace.grade }}</span>
+                            <span>품질 {{ necklace.quality }}</span>
+                        </div>
+
+                        {% for effect in necklace.polishing_effects[:2] %}
+
+                        <small class="option-line">
+                            {{ effect.name }}
+                            +{{ effect.value }}{{ effect.unit }}
+                        </small>
+
+                        {% endfor %}
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+
+
+                <!-- 귀걸이 -->
+
+                {% for index in range(2) %}
+
+                {% set item =
+                    earrings[index]
+                    if earrings|length > index
+                    else None
+                %}
+
+                <article class="equipment-card accessory-card">
+
+                    <div class="equipment-icon">
+
+                        {% if item and item.icon %}
+                        <img src="{{ item.icon }}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            귀걸이 {{ index + 1 }}
+                        </span>
+
+                        {% if item %}
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+                            <span>{{ item.grade }}</span>
+                            <span>품질 {{ item.quality }}</span>
+                        </div>
+
+                        {% for effect in item.polishing_effects[:2] %}
+
+                        <small class="option-line">
+                            {{ effect.name }}
+                            +{{ effect.value }}{{ effect.unit }}
+                        </small>
+
+                        {% endfor %}
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+
+
+                <!-- 반지 -->
+
+                {% for index in range(2) %}
+
+                {% set item =
+                    rings[index]
+                    if rings|length > index
+                    else None
+                %}
+
+                <article class="equipment-card accessory-card">
+
+                    <div class="equipment-icon">
+
+                        {% if item and item.icon %}
+                        <img src="{{ item.icon }}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            반지 {{ index + 1 }}
+                        </span>
+
+                        {% if item %}
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+                            <span>{{ item.grade }}</span>
+                            <span>품질 {{ item.quality }}</span>
+                        </div>
+
+                        {% for effect in item.polishing_effects[:2] %}
+
+                        <small class="option-line">
+                            {{ effect.name }}
+                            +{{ effect.value }}{{ effect.unit }}
+                        </small>
+
+                        {% endfor %}
+
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+
+
+                <!-- 팔찌 -->
+
+                <article class="equipment-card">
+
+                    <div class="equipment-icon">
+
+                        {% if character.bracelet.icon %}
+                        <img src="{{ character.bracelet.icon }}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            팔찌
+                        </span>
+
+                        <strong>
+                            {{ character.bracelet.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+
+                            {% for name, value in character.bracelet.stats.items() %}
+
+                            <span>
+                                {{ name }} +{{ value }}
+                            </span>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+
+
+                <!-- 어빌리티 스톤 -->
+
+                <article class="equipment-card">
+
+                    <div class="equipment-icon">
+
+                        {% if character.ability_stone.icon %}
+                        <img src="{{ character.ability_stone.icon }}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="equipment-info">
+
+                        <span class="equipment-type">
+                            어빌리티 스톤
+                        </span>
+
+                        <strong>
+                            {{ character.ability_stone.name }}
+                        </strong>
+
+                        <div class="equipment-meta">
+
+                            <span>
+                                {{ character.ability_stone.grade }}
+                            </span>
+
+                            <span>
+                                {{ character.ability_stone.level_bonus }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =========================
+             SKILL GEMS
+        ========================= -->
+
+        <section class="gem-section">
+
+            <div class="section-title">
+                스킬 보석
+            </div>
+
+
+            {% if character.skill_gems.gems %}
+
+
+                <!-- =====================
+                    겁화
+                ====================== -->
+
+                {% if gem_groups["겁화"] %}
+
+                <div class="gem-group">
+
+                    <div class="gem-group-title">
+
+                        <div>
+                            <strong>겁화</strong>
+                            <span>피해 증가</span>
+                        </div>
+
+                        <small>
+                            {{ gem_groups["겁화"]|length }}개
+                        </small>
+
+                    </div>
+
+
+                    <div class="gem-grid">
+
+                        {% for gem in gem_groups["겁화"] %}
+
+                        <article class="gem-card">
+
+                            <div class="gem-icon">
+
+                                {% if gem.icon %}
+
+                                <img
+                                    src="{{ gem.icon }}"
+                                    alt="{{ gem.type }}"
+                                >
+
+                                {% endif %}
+
+                                <span class="gem-level">
+                                    Lv.{{ gem.level }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="gem-info">
+
+                                <strong>
+                                    {{ gem.type }}의 보석
+                                </strong>
+
+                                <span>
+                                    {{ gem.skill_name }}
+                                </span>
+
+                                {% if gem.effect_description %}
+
+                                <small>
+                                    {{ gem.effect_description[0] }}
+                                </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+
+
+                <!-- =====================
+                     작열
+                ====================== -->
+
+                {% if gem_groups["작열"] %}
+
+                <div class="gem-group">
+
+                    <div class="gem-group-title">
+
+                        <div>
+                            <strong>작열</strong>
+                            <span>재사용 대기시간 감소</span>
+                        </div>
+
+                        <small>
+                            {{ gem_groups["작열"]|length }}개
+                        </small>
+
+                    </div>
+
+
+                    <div class="gem-grid">
+
+                        {% for gem in gem_groups["작열"] %}
+
+                        <article class="gem-card">
+
+                            <div class="gem-icon">
+
+                                {% if gem.icon %}
+
+                                <img
+                                    src="{{ gem.icon }}"
+                                    alt="{{ gem.type }}"
+                                >
+
+                                {% endif %}
+
+                                <span class="gem-level">
+                                    Lv.{{ gem.level }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="gem-info">
+
+                                <strong>
+                                    {{ gem.type }}의 보석
+                                </strong>
+
+                                <span>
+                                    {{ gem.skill_name }}
+                                </span>
+
+                                {% if gem.effect_description %}
+
+                                <small>
+                                    {{ gem.effect_description[0] }}
+                                 </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+
+
+                <!-- =====================
+                     광휘
+                ====================== -->
+
+                {% if gem_groups["광휘"] %}
+
+                <div class="gem-group">
+
+                    <div class="gem-group-title">
+
+                        <div>
+                            <strong>광휘</strong>
+                            <span>광휘 보석</span>
+                        </div>
+
+                        <small>
+                            {{ gem_groups["광휘"]|length }}개
+                        </small>
+
+                    </div>
+
+
+                    <div class="gem-grid">
+
+                        {% for gem in gem_groups["광휘"] %}
+
+                        <article class="gem-card">
+
+                            <div class="gem-icon">
+
+                                {% if gem.icon %}
+
+                                <img
+                                    src="{{ gem.icon }}"
+                                    alt="{{ gem.type }}"
+                                >
+
+                                {% endif %}
+
+                                <span class="gem-level">
+                                    Lv.{{ gem.level }}
+                                 </span>
+
+                            </div>
+
+
+                            <div class="gem-info">
+
+                                <strong>
+                                    {{ gem.type }}의 보석
+                                </strong>
+
+                                <span>
+                                    {{ gem.skill_name }}
+                                </span>
+
+                                {% if gem.effect_description %}
+
+                                <small>
+                                    {{ gem.effect_description[0] }}
+                                </small>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+
+                {% if character.skill_gems.total_effect %}
+
+                <div class="gem-total">
+                    {{ character.skill_gems.total_effect }}
+                </div>
+
+                {% endif %}
+
+
+            {% else %}
+
+                    <div class="empty-message">
+                        장착한 스킬 보석이 없습니다.
+                    </div>
+
+            {% endif %}
+
+        </section>
+
+    </section>
+
+</main>
+
+
+
+<script>
+
+function searchCharacter(event) {
+
+    event.preventDefault();
+
+    const input =
+        document.getElementById(
+            "character-name"
+        );
+
+    const characterName =
+        input.value.trim();
+
+    if (!characterName) {
+        return;
+    }
+
+    window.location.href =
+        "/character/"
+        + encodeURIComponent(
+            characterName
+        );
+}
+
+</script>
+
+
+</body>
+</html>
