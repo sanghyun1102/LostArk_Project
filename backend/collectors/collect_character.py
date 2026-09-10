@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 from dotenv import load_dotenv
 
-from backend.character_parser import (
+from backend.parsers.character_parser import (
     parse_character,
     save_processed_character
 )

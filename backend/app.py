@@ -3,11 +3,23 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from backend.collect_character import collect_character
-
+from backend.collectors.collect_character import collect_character
+from backend.services.snapshot_service import save_character_snapshot
+from backend.db.database import create_tables
+from backend.services.growth_service import (
+    get_latest_growth,
+    get_growth_history
+)
+from backend.services.comparison_service import (
+    get_comparison_cohort
+)
+from backend.services.candidate_service import (
+    find_candidates
+)
 
 app = FastAPI()
 
+create_tables()
 
 # CSS 등 정적 파일
 app.mount(
@@ -65,6 +77,10 @@ def character(
                 "error": "캐릭터 정보를 찾을 수 없습니다."
             }
         )
+
+    save_character_snapshot(
+        character_data
+    )
 
     # ==============================
     # 방어구 정리
@@ -160,4 +176,48 @@ def character(
             "rings": rings,
             "gem_groups": gem_groups
         }
+    )
+
+@app.get(
+    "/api/characters/{character_name}/growth"
+)
+def character_growth(
+    character_name: str
+):
+
+    return get_latest_growth(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/history"
+)
+def character_history(
+    character_name: str
+):
+
+    return get_growth_history(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/cohort"
+)
+def character_cohort(
+    character_name: str
+):
+
+    return get_comparison_cohort(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/candidates"
+)
+def character_candidates(
+    character_name: str
+):
+
+    return find_candidates(
+        character_name
     )
