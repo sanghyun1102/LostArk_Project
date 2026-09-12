@@ -18,6 +18,7 @@ BASE_DIR = (
     .resolve()
     .parent
     .parent
+    .parent
 )
 
 DISCOVERED_FILE = (

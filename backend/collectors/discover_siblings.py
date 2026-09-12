@@ -21,6 +21,7 @@ BASE_DIR = (
     .resolve()
     .parent
     .parent
+    .parent
 )
 
 SEED_FILE = (

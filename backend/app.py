@@ -16,6 +16,16 @@ from backend.services.comparison_service import (
 from backend.services.candidate_service import (
     find_candidates
 )
+from backend.services.statistics_service import (
+    get_cohort_statistics,
+    get_combat_power_percentile
+)
+from backend.services.feature_service import (
+    extract_growth_features
+)
+from backend.services.feature_analysis_service import (
+    get_feature_analysis
+)
 
 app = FastAPI()
 
@@ -219,5 +229,65 @@ def character_candidates(
 ):
 
     return find_candidates(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/statistics"
+)
+def character_statistics(
+    character_name: str
+):
+
+    return get_cohort_statistics(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/percentile"
+)
+def character_percentile(
+    character_name: str
+):
+
+    return get_combat_power_percentile(
+        character_name
+    )
+
+@app.get(
+    "/api/characters/{character_name}/features"
+)
+def character_features(
+    character_name: str
+):
+
+    character_data = collect_character(
+        character_name
+    )
+
+    if not character_data:
+
+        return {
+            "status": "character_not_found"
+        }
+
+    features = extract_growth_features(
+        character_data
+    )
+
+    return {
+        "status": "ok",
+        "character_name": character_name,
+        "features": features
+    }
+
+@app.get(
+    "/api/characters/{character_name}/feature-analysis"
+)
+def character_feature_analysis(
+    character_name: str
+):
+
+    return get_feature_analysis(
         character_name
     )

@@ -193,11 +193,73 @@ def collect_cohort_candidates(
 
         try:
 
-            character_data = (
-                collect_character(
-                    candidate_name
+            # ==============================
+            # 이미 DB에 저장된 캐릭터인지 확인
+            # ==============================
+
+            with SessionLocal() as db:
+
+                saved_character = db.scalar(
+                    select(Character)
+                    .where(
+                        Character.character_name
+                        == candidate_name
+                    )
                 )
-            )
+
+                saved_snapshot = None
+
+                if saved_character:
+
+                    saved_snapshot = (
+                        get_latest_snapshot(
+                            db,
+                            saved_character.id
+                        )
+                    )
+
+
+            # ==============================
+            # 기존 Snapshot이 있으면 재사용
+            # ==============================
+
+            if saved_snapshot:
+
+                character_data = (
+                    saved_snapshot.processed_data
+                )
+
+                print(
+                   "기존 DB 데이터 사용"
+                )
+
+
+            # ==============================
+            # 없으면 API에서 새로 수집
+            # ==============================
+
+            else:
+
+                character_data = (
+                    collect_character(
+                        candidate_name
+                    )
+                )
+
+                if not character_data:
+
+                    print(
+                        "상세 데이터 없음"
+                    )
+
+                    fail_count += 1
+                    continue
+
+                save_character_snapshot(
+                    character_data
+                )
+
+                time.sleep(0.7)
 
             if not character_data:
 
@@ -270,11 +332,6 @@ def collect_cohort_candidates(
                     f"다른 빌드 제외: "
                     f"{candidate_build}"
                 )
-
-
-            # 공식 API 요청을 너무 빠르게
-            # 연속 호출하지 않도록 잠시 대기
-            time.sleep(0.7)
 
 
         except Exception as error:
